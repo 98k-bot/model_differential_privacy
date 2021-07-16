@@ -5,11 +5,13 @@ import sys
 sys.path.append("..")
 
 from train_classifier_model import classification_params
-from keras.models import Sequential
-from keras.layers import Dense, Dropout
-from keras.utils import to_categorical
-from keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.optimizers import Adam
 import csv, numpy as np
+from example_training_loop import classification_net_features
+import tensorflow as tf
 
 
 ########################################################################################
@@ -17,6 +19,7 @@ import csv, numpy as np
 ########################################################################################
 # 1. Provide the order in which the labels are provided in the label matrix
 task_mapping = {"shape": 0, "color": 1, "size": 2, "quadrant": 3, "background": 4}
+
 
 def classifier_network(data_shape, num_labels):
 	""" Build a small fully connected two hiddey layer neural network classifier. Can replace this with any custom classifier of choice"""
@@ -72,9 +75,14 @@ def train_models():
 				train_y = train_y.take(data_indices, axis=0)
 				data_shape = train_x.shape[1]
 				train_y_one_hot = to_categorical(train_y, num_labels)
-
+				train_dataset = tf.data.Dataset.from_tensor_slices((train_x, train_y))
 				model = classifier_network(data_shape, num_labels)
 				print(model.summary())
+				#tf.enable_eager_execution()
+				classification_net_features(train_dataset=train_dataset,model=model,train_x_list=train_x)
+
+
+
 				print("Training the classifier ...... ")
 				adam = Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 				model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])

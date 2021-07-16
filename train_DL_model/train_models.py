@@ -9,9 +9,11 @@ sys.path.append("..")
 from train_DL_model import model_params
 from utils import util_functions as utils
 import os, numpy as np
-from keras.optimizers import Adam
-from keras.utils import to_categorical
-from keras.callbacks import ModelCheckpoint
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.callbacks import ModelCheckpoint
+import tensorflow as tf
+#tf.compat.v1.disable_eager_execution()
 
 ########################################################################################
 # Hard-coded rules. Please change this if you are changing the dataset format
@@ -82,18 +84,27 @@ def train_models():
 			y_train = to_categorical(answer, num_task_labels)
 
 			utils.create_directory(model_params.model_dir)
-			filepath = os.path.join(model_params.model_dir, model_name + "_e{epoch:02d}-acc{val_acc:.5f}.hdf5")
-			checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
-			callbacks_list = [checkpoint]
+			filepath = os.path.join(model_params.model_dir, model_name + "_e{epoch:02d}-acc{val_accuracy:.5f}.hdf5")
+			#checkpoint = ModelCheckpoint(filepath, monitor='val_accuracy', verbose=1, save_best_only=True, mode='max')
+			#callbacks_list = [checkpoint]
+			#checkpoint_filepath = '/tmp/checkpoint'
+			model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+				filepath=filepath,
+				save_weights_only=True,
+				monitor='val_accuracy',
+				mode='max',
+				save_best_only=True)
 
 			print("Submitting the model for training ...... ")
 			adam = Adam(lr=model_params.learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
 			model.compile(optimizer=adam, loss=model_params.loss_function, metrics=['accuracy'])
-			model.fit(x_train, y_train, batch_size=model_params.batch_size, epochs=model_params.epoch, verbose=model_params.verbose, validation_split=model_params.validation_split, callbacks=callbacks_list)
+			model.fit(x_train, y_train, batch_size=model_params.batch_size, epochs=model_params.epoch,
+					  verbose=model_params.verbose, validation_split=model_params.validation_split, callbacks= [model_checkpoint_callback])
+			#model.fit(x_train, y_train, batch_size=model_params.batch_size, epochs=model_params.epoch, verbose=model_params.verbose, validation_split=model_params.validation_split, callbacks=callbacks_list)
 
 			print("\nTraining has finished ...... ")
-			model.save(os.path.join(model_params.model_dir, model_name  + "_final.hdf5"))
-			print("Trained model store at: ", os.path.join(model_params.model_dir, model_name  + "_final.hdf5"))
+			#model.save(os.path.join(model_params.model_dir, model_name  + "_final.hdf5"))
+			#print("Trained model store at: ", os.path.join(model_params.model_dir, model_name  + "_final.hdf5"))
 
 			print("\nLoading test dataset ...... ")
 			data_type = "test"
@@ -113,7 +124,7 @@ def train_models():
 			score = model.evaluate(x=test_data_x, y=test_data_answer_one_hot, verbose=model_params.verbose)
 			print("\nTest Score", score)
 
-	return None
+	return model
 
 if __name__ == "__main__":
 	train_models()

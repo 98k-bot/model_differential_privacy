@@ -24,24 +24,25 @@ from train_DL_model import extract_features
 from train_classifier_model import classification_net
 from compute_model_trust import calculate_model_trust
 
+
 def main():
     # 1. Generate synthetic dataset (Can skip this with custom dataset)
     # All the controlling parameters are available in make_dataset/dataset_params.py
     print("########################################################################")
     print("1. Generate synthetic dataset (Can skip this with custom dataset)")
-    make_dataset.make_dataset()
+    #make_dataset.make_dataset()
 
     # 2. Train a deep learning model for one task (currently training DenseNet model, can replace this with custom DL model)
     # All the controlling parameters are available in train_DL_model/model_params.py
     print("########################################################################")
     print("2. Train a deep learning model for one task (currently training DenseNet model, can replace this with custom DL model)")
-    train_models.train_models()
+    #model = train_models.train_models()
 
     # 3. Extract features of dataset on the DL model (can chose any custom layer)
     # All the controlling parameters are available in train_DL_model/model_params.py
     print("########################################################################")
     print("3. Extract features of dataset on the DL model (can chose any custom layer)")
-    extract_features.extract_features()
+    #extract_features.extract_features(model)
 
     # 4. Train neural network classifier model for other auxillary tasks (can replace this with custom classifier)
     # All the controlling parameters are available in train_classifier_model/classification_params.py

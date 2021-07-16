@@ -9,7 +9,8 @@ sys.path.append("..")
 from train_DL_model import model_params
 from utils import util_functions as utils
 import os, numpy as np
-from keras.models import Model, load_model
+from tensorflow.keras.models import Model
+from tensorflow import keras
 
 ########################################################################################
 # Hard-coded rules. Please change this if you are changing the dataset format
@@ -17,7 +18,7 @@ from keras.models import Model, load_model
 # 1. Provide the order in which the labels are provided in the label matrix
 task_mapping = {"shape": 0, "color": 1, "size": 2, "quadrant": 3, "background": 4}
 
-def extract_features():
+def extract_features(model):
 	"""Extract features from a trained DL model (from a predefined layer)"""
 
 	utils.create_directory(model_params.feat_dir)
@@ -29,7 +30,8 @@ def extract_features():
 			if not trained_model_path:
 				trained_model_path = os.path.join(model_params.model_dir, model_params.output_name_prefix + "_" + task_key + "_final.hdf5")
 			
-			model = load_model(trained_model_path)
+			#model = load_model(trained_model_path, compile=False)
+			model = keras.models.load_model(trained_model_path)
 			print("Printing model summary ....... ")
 			print(model.summary())
 			dense_model = Model(inputs=model.input, outputs=model.get_layer(model_params.layer).output)
